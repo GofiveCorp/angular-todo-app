@@ -29,7 +29,7 @@ import { Todo } from '../../domain/todo/todo.model';
         </div>
         <button type="submit" [disabled]="todoForm.invalid || loading" class="btn btn-primary ml-2 mt-2">
           <span *ngIf="loading" class="spinner-border spinner-border-sm mr-1"></span>
-          Add Todo
+          {{ editingTodo ? "Update Todo" : "Add Todo" }}
         </button>
       </form>
       
@@ -39,15 +39,20 @@ import { Todo } from '../../domain/todo/todo.model';
           Todo List
         </div>
         <ul class="list-group list-group-flush">
-          <li *ngFor="let todo of todos" class="list-group-item d-flex justify-content-between align-items-center">
+          <li *ngFor="let todo of todos" class="list-group-item d-flex justify-content-between align-items-center mb-2">
+            <!-- Changed block: added icon for completed vs. pending todo -->
             <span [ngClass]="{'text-decoration-line-through': todo.completed}">
+              <i class="fa" [ngClass]="{'fa-check-circle text-success': todo.completed, 'fa-circle text-secondary': !todo.completed}" aria-hidden="true"></i>
               {{ todo.title }} - {{ todo.description }}
             </span>
             <div>
-              <button (click)="markTodoAsCompleted(todo.id)" [disabled]="todo.completed || loading" class="btn btn-success btn-sm mr-4">
+              <button (click)="prepareEdit(todo)" [disabled]="loading" class="btn btn-warning btn-sm mr-2">
+                Edit
+              </button>
+              <button (click)="markTodoAsCompleted(todo.id)" [disabled]="todo.completed || loading" class="btn btn-success btn-sm mx-2">
                 Complete
               </button>
-              <button (click)="deleteTodo(todo.id)" [disabled]="loading" class="btn btn-danger btn-sm ml-3">
+              <button (click)="deleteTodo(todo.id)" [disabled]="loading" class="btn btn-danger btn-sm ml-2">
                 Delete
               </button>
             </div>
@@ -61,6 +66,7 @@ export class TodoComponent implements OnInit {
   todos: Todo[] = [];
   loading = false;
   todoForm!: FormGroup;
+  editingTodo: Todo | null = null; // new property to track edit mode
 
   constructor(private todoService: TodoService) {}
 
@@ -68,6 +74,16 @@ export class TodoComponent implements OnInit {
     this.todoForm = new FormGroup({
       title: new FormControl('', Validators.required),
       description: new FormControl('', Validators.required)
+    });
+    // Added: load old todos when f5 is pressed
+    this.todos = await this.todoService.getTodos();
+  }
+
+  prepareEdit(todo: Todo) {
+    this.editingTodo = todo;
+    this.todoForm.patchValue({
+      title: todo.title,
+      description: todo.description
     });
   }
 
@@ -79,7 +95,13 @@ export class TodoComponent implements OnInit {
     }
     const { title, description } = this.todoForm.value;
     this.loading = true;
-    await this.todoService.createTodo(title, description);
+    if (this.editingTodo) {
+      // update existing todo; assume updateTodo is defined in the service
+      await this.todoService.updateTodo(this.editingTodo.id, title, description);
+      this.editingTodo = null;
+    } else {
+      await this.todoService.createTodo(title, description);
+    }
     this.todos = await this.todoService.getTodos();
     this.loading = false;
     this.todoForm.reset();

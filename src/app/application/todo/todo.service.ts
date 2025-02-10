@@ -1,4 +1,3 @@
-
 import { Injectable } from '@angular/core';
 import { Todo } from '../../domain/todo/todo.model';
 import { TodoRepository } from '../../domain/todo/todo.repository';
@@ -26,7 +25,9 @@ export class TodoService {
   async updateTodo(id: string, title: string, description: string): Promise<void> {
     const todo = await this.todoRepository.getById(id);
     if (!todo) throw new Error('Todo not found');
-    todo.update(title, description);
+    // Directly update the fields instead of calling a non-existent method
+    todo.title = title;
+    todo.description = description;
     await this.todoRepository.update(todo);
     this.publishEvent(new TodoUpdated(todo.id, title));
   }
