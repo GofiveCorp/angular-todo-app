@@ -44,6 +44,10 @@ import { Todo } from '../../domain/todo/todo.model';
             <span [ngClass]="{'text-decoration-line-through': todo.completed}">
               <i class="fa" [ngClass]="{'fa-check-circle text-success': todo.completed, 'fa-circle text-secondary': !todo.completed}" aria-hidden="true"></i>
               {{ todo.title }} - {{ todo.description }}
+              <br>
+              <small class="text-muted">
+                {{ todo.updatedAt ? ('Updated: ' + (todo.updatedAt | date:'short')) : ('Created: ' + (todo.createdAt | date:'short')) }}
+              </small>
             </span>
             <div>
               <button (click)="prepareEdit(todo)" [disabled]="loading" class="btn btn-warning btn-sm mr-2">
@@ -96,8 +100,8 @@ export class TodoComponent implements OnInit {
     const { title, description } = this.todoForm.value;
     this.loading = true;
     if (this.editingTodo) {
-      // update existing todo; assume updateTodo is defined in the service
-      await this.todoService.updateTodo(this.editingTodo.id, title, description);
+      // update existing todo with updatedAt value so storage keeps the date updated
+      await this.todoService.updateTodo(this.editingTodo.id, title, description, new Date());
       this.editingTodo = null;
     } else {
       await this.todoService.createTodo(title, description);

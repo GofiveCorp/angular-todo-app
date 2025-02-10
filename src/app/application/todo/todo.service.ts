@@ -22,12 +22,14 @@ export class TodoService {
     this.publishEvent(new TodoCreated(todo.id, title));
   }
 
-  async updateTodo(id: string, title: string, description: string): Promise<void> {
+  // Change method signature to accept updatedAt
+  async updateTodo(id: string, title: string, description: string, updatedAt: Date): Promise<void> {
     const todo = await this.todoRepository.getById(id);
     if (!todo) throw new Error('Todo not found');
     // Directly update the fields instead of calling a non-existent method
     todo.title = title;
     todo.description = description;
+    todo.updatedAt = updatedAt;
     await this.todoRepository.update(todo);
     this.publishEvent(new TodoUpdated(todo.id, title));
   }
