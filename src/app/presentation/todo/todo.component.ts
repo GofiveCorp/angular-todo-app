@@ -20,7 +20,7 @@ import { Todo } from '../../domain/todo/todo.model';
           <input formControlName="title" id="title" placeholder="Title" required class="form-control" />
           <!-- Error message for empty title -->
           <div *ngIf="todoForm.get('title')?.invalid && todoForm.get('title')?.touched" class="text-danger">
-            กรุณากรอก title
+            Please enter a title
           </div>
         </div>
         <div class="form-group">
@@ -56,7 +56,7 @@ import { Todo } from '../../domain/todo/todo.model';
               <button (click)="markTodoAsCompleted(todo.id)" [disabled]="todo.completed || loading" class="btn btn-success btn-sm mx-2">
                 Complete
               </button>
-              <button (click)="deleteTodo(todo.id)" [disabled]="loading" class="btn btn-danger btn-sm ml-2">
+              <button (click)="confirmDelete(todo.id)" [disabled]="loading" class="btn btn-danger btn-sm ml-2">
                 Delete
               </button>
             </div>
@@ -116,6 +116,12 @@ export class TodoComponent implements OnInit {
     await this.todoService.completeTodo(id);
     this.todos = await this.todoService.getTodos();
     this.loading = false;
+  }
+
+  async confirmDelete(id: string) {
+    if (confirm('Are you sure you want to delete this todo?')) {
+      await this.deleteTodo(id);
+    }
   }
 
   async deleteTodo(id: string) {

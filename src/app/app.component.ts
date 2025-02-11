@@ -4,9 +4,12 @@ import { TodoComponent } from "./presentation/todo/todo.component";
 
 @Component({
   selector: 'app-root',
+  standalone: true,
   imports: [RouterOutlet, TodoComponent],
-  templateUrl: './app.component.html',
-  styleUrl: './app.component.scss'
+  template: `
+    <router-outlet></router-outlet>
+    <app-todo></app-todo>
+  `
 })
 export class AppComponent {
   title = 'angular-todo-app';
