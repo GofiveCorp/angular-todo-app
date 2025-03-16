@@ -16,20 +16,19 @@ export class TodoService {
     this.todoRepository = new OfflineTodoRepository();
   }
 
-  async createTodo(title: string, description: string): Promise<void> {
-    const todo = new Todo(uuidv4(), title, description);
+  async createTodo(title: string, description: string, activityDate: Date): Promise<void> {
+    const todo = new Todo(uuidv4(), title, description, false, activityDate);
     await this.todoRepository.create(todo);
     this.publishEvent(new TodoCreated(todo.id, title));
   }
 
-  // Change method signature to accept updatedAt
-  async updateTodo(id: string, title: string, description: string, updatedAt: Date): Promise<void> {
+  async updateTodo(id: string, title: string, description: string, updatedAt: Date, activityDate: Date): Promise<void> {
     const todo = await this.todoRepository.getById(id);
     if (!todo) throw new Error('Todo not found');
-    // Directly update the fields instead of calling a non-existent method
     todo.title = title;
     todo.description = description;
     todo.updatedAt = updatedAt;
+    todo.activityDate = activityDate;
     await this.todoRepository.update(todo);
     this.publishEvent(new TodoUpdated(todo.id, title));
   }
